@@ -7,7 +7,10 @@ import pandas as pd
 # dataframe Name and Age columns
 df = pd.DataFrame({'name': [],
                    'price': [],
-                   'asin': []})
+                   'asin': [],
+                   'amazon_price':[],
+                   'net_profit': [],
+                   'roi':[]})
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
 writer = pd.ExcelWriter('demo.xlsx', engine='xlsxwriter')

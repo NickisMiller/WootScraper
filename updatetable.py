@@ -12,28 +12,27 @@ time.sleep(3)
 
 #aTagsInLi = driver.find_elements_by_css_selector('a')
 for a in driver.find_elements_by_css_selector('a'):
-    href = a.get_attribute('href')
-    print(href)
+    href = a.get_attribute('href')   
     if 'woot.com/offers/' in href:
-        #time.sleep(2)     
+        time.sleep(2)     
         driver.get(href)
         #time.sleep(2)
         name = driver.title
+        print("Name is: ")
         print(name)
         #time.sleep(1)
         price = price = driver.find_element_by_class_name('price').text
         print(price)
         time.sleep(2)
         source = driver.page_source
-        #time.sleep(2)
-        #asin = source.split("Asin\":\"")[1].split("\"")[0]
         time.sleep(2)
         try:
             asin = source.split("Asin\":\"")[1].split("\"")[0]
         except IndexError:
             asin = 'null'
-        #time.sleep(2)
+        time.sleep(2)
         print(asin)
+        time.sleep(2)
         df = pd.DataFrame({'name': [name],
                    'price': [price],
                    'asin': [asin]})
@@ -48,16 +47,12 @@ for a in driver.find_elements_by_css_selector('a'):
         df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
         writer.close()
 
-        driver.implicitly_wait(5)
+        driver.implicitly_wait(2)
         driver.back()
-        driver.implicitly_wait(5)
+        driver.implicitly_wait(2)
 
-        
-
-        #go back to deals page
-        #re-find all of the hrefs like 'woot/offers?
-        #
-        
+#https://www.profitguru.com/calculator/fba
+#https://brickseek.com/        
 #exit()
 
 
