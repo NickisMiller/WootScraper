@@ -1,4 +1,6 @@
 #https://www.profitguru.com/calculator/fba
+#https://sellercentral.amazon.com/revcal?ref=RC1
+
 
 from asyncio.windows_events import NULL
 from calendar import c
@@ -6,6 +8,8 @@ import pandas as pd
 from openpyxl import load_workbook
 from selenium import webdriver
 import time
+import openpyxl
+
 
 #get to asin site
 driver = webdriver.Chrome()
@@ -29,6 +33,8 @@ for i in range(0,size):
     #need to remove the dollar sign
     price = excel_price[1:]
     time.sleep(2)
+    asin_input.clear()
+    time.sleep(2)
     asin_input.send_keys(asin_number)
     time.sleep(1)
 
@@ -48,21 +54,24 @@ for i in range(0,size):
     print(net_profit)
     print(roi)
     print(amazon_price)
+    print(i)
   
-    #write to excel sheet
-    df_new = pd.DataFrame({'amazon_price': [amazon_price]})
-    writer = pd.ExcelWriter('demo.xlsx', engine='openpyxl', mode='a', if_sheet_exists='overlay')
-    # try to open an existing workbook
-    writer.book = load_workbook('demo.xlsx')
-    # copy existing sheets
-    writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
-    # read existing file
-    reader = pd.read_excel(r'demo.xlsx')
-    # write out the new sheet
-    df_new.to_excel(writer,index=False,header=False)
-    writer.close()
 
-    exit()
+    xfile = openpyxl.load_workbook('demo.xlsx')
+
+    sheet = xfile.get_sheet_by_name('Sheet1')
+    
+    x=i+2
+    
+    #sheet["D"] = amazon_price
+    sheet.cell(row = x, column = 4).value = amazon_price
+    sheet.cell(row = x, column = 5).value = net_profit
+    sheet.cell(row = x, column = 6).value = roi
+
+    xfile.save('demo.xlsx')
+
+    time.sleep(3)
+    
 
     
 
