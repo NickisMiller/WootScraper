@@ -1,6 +1,9 @@
 # https://www.profitguru.com/calculator/fba
 # https://sellercentral.amazon.com/revcal?ref=RC1
 
+# This still won't work without getting around the login page thing
+# Just delete all the rows except for like 5 or 6 in the CSV file to test it
+
 import time
 import csv
 from itertools import zip_longest
