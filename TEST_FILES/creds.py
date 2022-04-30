@@ -1,0 +1,2 @@
+USERNAME='testusername'
+PASSWORD=1234
