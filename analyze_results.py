@@ -29,6 +29,30 @@ amazon_price_xpath = "/html/body/main/div/div[3]/div[1]/div[2]/div/div[2]/div/di
 driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.get("https://www.profitguru.com/calculator/fba")
 
+
+#####################################################################
+##############################FOR FUTURE USE#########################
+#####################################################################
+
+#URL -  THIS IS THE URL TO THE AMAZON SELLER CENTRAL REVENUE CALCULATOR
+#driver.get("https://sellercentral.amazon.com/revcal?ref=RC1")
+
+#CREDENTIALS
+#user_name = 'pull the username from a hidden file'
+#password = ^^same as above^^
+
+#asin_input = driver.find_element_by_id('katal-id-3')
+#########CODY, IK YOURE AN XPATH GUY, SO I LEFT THIS HERE FOR YOU##########
+#search_button = driver.find_element_by_xpath('//*[@id="ProductSearchInput"]/kat-button//button') 
+
+
+#cost_price_input =  driver.find_element_by_id('katal-id-30')
+#net_profit = driver.find_element_by_id('katal-id-10').text
+#roi = driver.find_element_by_xpath('//*[@id="ProgramCard"]/div[2]/div[2]/div/div[2]/div[2]/kat-label[2]//label/slot/span').text
+#num_sellers = driver.find_element_by_xpath('//*[@id="product-detail-right"]/table/tbody/tr[4]/td[2]').text
+#sales_rank = driver.find_element_by_xpath('//*[@id="product-detail-right"]/table/tbody/tr[3]/td[2]').text
+
+
 # Initilize vars
 asin_csv = []
 price_csv = []
