@@ -1,83 +1,87 @@
-#https://www.profitguru.com/calculator/fba
-#https://sellercentral.amazon.com/revcal?ref=RC1
+# https://www.profitguru.com/calculator/fba
+# https://sellercentral.amazon.com/revcal?ref=RC1
 
-
-from asyncio.windows_events import NULL
-from calendar import c
-import pandas as pd
-from openpyxl import load_workbook
-from selenium import webdriver
 import time
-import openpyxl
+import csv
+from itertools import zip_longest
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import NoSuchElementException
+from datetime import datetime
 
+# CSV file to read locally
+main_csv_file = "export_woot_bot_1651300916.csv"
 
-#get to asin site
-driver = webdriver.Chrome()
+# Export file name
+file_name_save = "export_analyze_results_{}.csv".format(
+    int(round(datetime.now().timestamp())))
+
+# More fucking xpath vars... boooo....
+calculate_button_xpath = "/html/body/main/div/div[3]/div[1]/div[2]/form/div[2]/div[1]/button"
+net_profit_xpath = "/html/body/main/div/div[3]/div[1]/div[2]/form/div[1]/div[1]/div/div/div/table/tbody/tr[7]/td[1]/span"
+roi_xpath = "/html/body/main/div/div[3]/div[1]/div[2]/form/div[1]/div[1]/div/div/div/table/tbody/tr[9]/td[1]/span"
+amazon_price_xpath = "/html/body/main/div/div[3]/div[1]/div[2]/div/div[2]/div/div/div/table/tbody/tr[1]/td[2]/div[1]/span[2]"
+
+# get to asin site
+driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.get("https://www.profitguru.com/calculator/fba")
-time.sleep(1)
 
+# Initilize vars
+asin_csv = []
+price_csv = []
 
-#get the asin column from sheet
-asin_and_price = pd.read_excel(r"C:\Users\nickm\OneDrive\Desktop\python\demo.xlsx")
-#price = pd.read_excel(r"C:\Users\nickm\OneDrive\Desktop\python\demo.xlsx", usecols="B")
+net_profit = []
+roi = []
+amazon_price = []
 
-time.sleep(1)
+# Read csv file and pull ASIN number
+with open(main_csv_file, "r", newline="") as file:
+    reader = csv.reader(file, delimiter=",")
+    for row in reader:
+        # Skips the title row and puts the rest into lists
+        if row[0] != "ASIN":
+            asin_csv.append(row[0])
+        if row[1] != "Price":
+            price_csv.append(row[1])
+
 asin_input = driver.find_element_by_id("load_asin_asin")
 cost_price_input = driver.find_element_by_id("fba_calculation_supplierPrice")
 search_button = driver.find_element_by_id("search-button")
 
-size = len(asin_and_price)
-for i in range(0,size):
-    asin_number = asin_and_price['asin'].loc[i]
-    excel_price = asin_and_price['price'].loc[i]
-    #need to remove the dollar sign
-    price = excel_price[1:]
-    time.sleep(2)
+for asin, price in zip(asin_csv, price_csv):
     asin_input.clear()
-    time.sleep(2)
-    asin_input.send_keys(asin_number)
-    time.sleep(1)
-
+    asin_input.send_keys(asin)
     search_button.click()
-    time.sleep(1)
+
     cost_price_input.clear()
     cost_price_input.send_keys(price)
-    time.sleep(1)
-    calculate_button = driver.find_element_by_xpath("/html/body/main/div/div[3]/div[1]/div[2]/form/div[2]/div[1]/button")
+
+    calculate_button = driver.find_element_by_xpath(calculate_button_xpath)
     calculate_button.click()
-    time.sleep(4)
 
-    net_profit = driver.find_element_by_xpath("/html/body/main/div/div[3]/div[1]/div[2]/form/div[1]/div[1]/div/div/div/table/tbody/tr[7]/td[1]/span").text
-    roi = driver.find_element_by_xpath("/html/body/main/div/div[3]/div[1]/div[2]/form/div[1]/div[1]/div/div/div/table/tbody/tr[9]/td[1]/span").text
-    amazon_price = driver.find_element_by_xpath("/html/body/main/div/div[3]/div[1]/div[2]/div/div[2]/div/div/div/table/tbody/tr[1]/td[2]/div[1]/span[2]").text
+    # Looks for the amazon link (amazon.com/dp/ASIN#) and continues once it's found
+    while True:
+        html_source = driver.page_source
+        if html_source.find("/dp/" + asin) != -1:
+            break
+        else:
+            time.sleep(.1)
 
-    print(net_profit)
-    print(roi)
-    print(amazon_price)
-    print(i)
-  
+    # Collect information from website
+    net_profit.append(driver.find_element_by_xpath(net_profit_xpath).text)
+    roi.append(driver.find_element_by_xpath(roi_xpath).text)
+    amazon_price.append(driver.find_element_by_xpath(amazon_price_xpath).text)
 
-    xfile = openpyxl.load_workbook('demo.xlsx')
-
-    sheet = xfile.get_sheet_by_name('Sheet1')
-    
-    x=i+2
-    
-    #sheet["D"] = amazon_price
-    sheet.cell(row = x, column = 4).value = amazon_price
-    sheet.cell(row = x, column = 5).value = net_profit
-    sheet.cell(row = x, column = 6).value = roi
-
-    xfile.save('demo.xlsx')
-
-    time.sleep(3)
-    
-
-    
-
-
+# Write the items to CSV file - idk I just copied this code from stackoverflow and it works
+d = [asin_csv, price_csv, net_profit, roi, amazon_price]
+export_data = zip_longest(*d, fillvalue='')
+with open(file_name_save, 'w', encoding="ISO-8859-1", newline='') as f:
+    wr = csv.writer(f)
+    wr.writerow(("ASIN", "Woot Price", "Net Profit", "ROI", "Amazon Price"))
+    wr.writerows(export_data)
+f.close()
 
 ########### TODO ###############
 # READ CSV ----- DONE
-# INPUT ASIN AND PRICE INTO CALCULATOR ---- DONE 
+# INPUT ASIN AND PRICE INTO CALCULATOR ---- DONE
 # GRAB IMPORTANT INFO FROM CALCULATOR (PROFIT, ROI, AMAZON PRICE)
