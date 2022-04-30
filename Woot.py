@@ -6,9 +6,6 @@ from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 
-# Set true to compare to amazon.com prices
-search_amazon = False
-
 # Set 'False' for all pages, or set number of pages you want + 1
 top_woot_items = 2
 
