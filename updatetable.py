@@ -12,7 +12,10 @@ time.sleep(3)
 
 #aTagsInLi = driver.find_elements_by_css_selector('a')
 for a in driver.find_elements_by_css_selector('a'):
-    href = a.get_attribute('href')   
+    time.sleep(1)
+    href = a.get_attribute('href') 
+    print(href)
+    time.sleep(1)  
     if 'woot.com/offers/' in href:
         time.sleep(2)     
         driver.get(href)
@@ -45,6 +48,7 @@ for a in driver.find_elements_by_css_selector('a'):
         reader = pd.read_excel(r'demo.xlsx')
         # write out the new sheet
         df.to_excel(writer,index=False,header=False,startrow=len(reader)+1)
+        
         writer.close()
 
         driver.implicitly_wait(2)
