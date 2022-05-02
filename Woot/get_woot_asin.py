@@ -10,7 +10,7 @@ from datetime import datetime
 script_dir = os.path.dirname(__file__)
 
 # Set 'False' for all pages, or set number of pages you want + 1
-top_woot_items = 3
+top_woot_items = False
 
 woot_url = "https://www.woot.com/alldeals?ref=w_ngh_et_1"
 

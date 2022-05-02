@@ -1,0 +1,92 @@
+{
+    'EventId': '147f4fb6-b47a-4a66-8265-d5d1393bca54',
+    'ExtendedWarranty': None,
+    'Features': '<ul>\r\n\t<li>Smooth-gliding hinge lets you adjust iPad to any viewing angle within a 50-degree range</li>\r\n\t<li>State-of-the-art materials protect against bumps,
+    scratches,
+    and spills</li>\r\n\t<li>Wakes iPad Air when you open the cover,
+    puts it to sleep when you close it</li>\r\n\t<li>Precision engineering to withstand frequent use</li>\r\n\t<li>Compatibilty: for - iPad air 2 - ONLY not for regular iPad Air or other iPad Models</li>\r\n</ul>\r\n\r\n<p>&nbsp;</p>\r\n\r\n<p>Shipping Note: Shipping to Alaska and Hawaii is not available for this item. A physical address is required for delivery. No Military or PO Box shipments available.</p>\r\n\r\n<p><strong>Warranty:</strong> <a href="http://www.woot.com/user/warrantyinfo.htm" target="_blank">90 Day Woot Limited Warranty</a></p>\r\n\r\n<p><strong style="font-family: Calibri; font-size: 11pt;"><span style="font-size:10.5pt;font-family:\r\n&quot;Helvetica&quot;,
+    sans-serif;mso-fareast-font-family:&quot;Times New Roman&quot;;color:#333333;\r\nmso-ansi-language:EN-US;mso-fareast-language:EN-US;mso-bidi-language:AR-SA">Optional Asurion Protection Plan:</span></strong><span style="font-size: 10.5pt; font-family: Helvetica,
+    sans-serif; color: rgb(51,
+    51,
+    51);">&nbsp;To further protect your purchase,
+    you can buy an Asurion protection plan from Amazon&nbsp;<span class="wikiinternallink"><a href="https://www.amazon.com/stores/page/84EB5403-C643-4F9D-8427-053F1AAE1EC6?channel=WootHomePage" target="_blank"><span style="color:#0088CC">here</span></a></span>. Review the <a href="https://forums.woot.com/t/asurion-protection-plan-faq/964036">FAQs</a> for additional information.</span></p>',
+    'FullTitle': 'Logitech iPad Air 2 Hinge Flex Case - Black',
+    'Id': '91c9daff-8552-4250-b9f7-94865fe61ccf',
+    'IsOfferLiveNow': True,
+    'IsSoldOut': False,
+    'IsWootOff': False,
+    'Items': [
+        {
+            'Asin': 'B01873TZRK',
+            'Attributes': [
+                {
+                    'Key': 'Condition',
+                    'Value': 'New'
+                },
+                {
+                    'Key': 'Model',
+                    'Value': 'Open-Box'
+                }
+            ],
+            'Id': '75ea573b-eaeb-425a-858d-10147cfda985',
+            'ListPrice': None,
+            'Photos': [
+                {
+                    'Caption': None,
+                    'Tags': [],
+                    'Height': 576,
+                    'Width': 768,
+                    'Url': 'https://d3gqasl9vmjfd8.cloudfront.net/7e94a55b-bf95-45cc-98a2-e36bcffb3fc5.png'}],
+                    'SalePrice': 7.99,
+                    'Title': 'Logitech LOGI 939-001395 Logitech Hinge Flex Case for i',
+                    'Win': 'SY16724A'
+                }
+            ],
+            'PercentageRemainingBlurred': 94,
+            'Photos': [
+                {
+                    'Caption': None,
+                    'Tags': [],
+                    'Height': 410,
+                    'Width': 1080,
+                    'Url': 'https://images-na.ssl-images-amazon.com/images/S/mediaservice.woot.com/7e94a55b-bf95-45cc-98a2-e36bcffb3fc5._SX1080_CR0,
+                    00,
+                    080,
+                    10_.png'
+                },
+            'PurchaseLimit': 3,
+            'QuantityLimit': None,
+            'ShippingMethods': [
+                {
+                    'ExcludedPostalCodes': [],
+                    'ExcludedStates': [
+                        'AK',
+                        'HI',
+                        'AA',
+                        'AE',
+                        'AP',
+                        'AS',
+                        'FM',
+                        'GU',
+                        'MH',
+                        'MP',
+                        'PW',
+                        'PR',
+                        'VI'
+                    ],
+                    'ExcludePOBox': True,
+                    'Name': 'Standard'
+                }
+            ],
+            'Slug': 'logitech-ipad-air-2-hinge-flex-case-black-1',
+            'Snippet': None,
+            'Specs': '<span class="prokeys-snippet-text"><strong>In the Box:</strong></span>\r\n\r\n<ul>\r\n\t<li>Logitech iPad Air 2 Hinge Flex Case - Black</li>\r\n</ul>',
+            'Subtitle': None,
+            'Teaser': None,
+            'Title': 'Logitech iPad Air 2 Hinge Flex Case - Black',
+            'Url': 'https://sellout.woot.com/offers/logitech-ipad-air-2-hinge-flex-case-black?utm_campaign=api.woot.com',
+            'Win': 'SY16724A',
+            'WriteUpBody': None,
+            'WriteUpIntro': None
+        }
+    }
