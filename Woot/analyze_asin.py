@@ -3,6 +3,8 @@ import configparser
 import time
 import os
 import csv
+from os import listdir
+from os.path import isfile, join
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
@@ -10,9 +12,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime
 
+script_dir = os.path.dirname(__file__)
+
 # Import Amazon credneitals into local dictionary
 config = configparser.RawConfigParser()
-script_dir = os.path.dirname(__file__)
 rel_path = "../../creds.cfg"
 creds_file_path = os.path.join(script_dir, rel_path)
 config.read(creds_file_path)
@@ -22,13 +25,42 @@ amazon_credentials = dict(config.items("Amazon_Credentials"))
 user_email = amazon_credentials["amazon_user"]
 user_pass = amazon_credentials["amazon_pass"]
 
-# CSV asin file and website url
-script_dir = os.path.dirname(__file__)
-rel_path = "exports/export_woot_bot_1651438146.csv"
+# CSV asin file and website url - grab most recent file
+folder = "exports"
+
+appr_files = {}
+date_keys = []
+
+temp_path = os.path.join(script_dir, folder)
+onlyfiles = [f for f in listdir(temp_path) if isfile(join(temp_path, f))]
+
+# Search all files in export directory and place into list and dictionary
+for file in onlyfiles:
+    if "export_woot_bot" in file:
+        date_key = int(file.split("_")[-1].split(".")[0])
+
+        date_keys.append(date_key)
+        appr_files[date_key] = file
+
+
+sorted_csv_file = sorted(date_keys, reverse=True)[0]
+
+# Combine latest file with rest of path
+rel_path = folder + "/" + appr_files[sorted_csv_file]
 main_csv_file = os.path.join(script_dir, rel_path)
 
+# Export file
+rel_path = folder + "/final-export{}.csv".format(
+    datetime.today().strftime("%Y-%m-%d"))
+export_csv_file = os.path.join(script_dir, rel_path)
+
+master_list_file = {}
+
+# CSV Import vars
 asin_csv = []
 price_csv = []
+woot_name = []
+woot_link = []
 
 amazon_url = "https://sellercentral.amazon.com/revcal?ref=RC1&"
 
@@ -64,9 +96,15 @@ def Pull_ASIN(csv_file=main_csv_file):
                 asin_csv.append(row[0])
             if row[1] != "Price":
                 price_csv.append(row[1])
+            if row[2] != "Name":
+                woot_name.append(row[2])
+            if row[3] != "URL":
+                woot_link.append(row[3])
 
 
-def Get_Amazon_Info(asin_list, price_list):
+def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
+    global master_list_file
+
     # Slow down reCaptcha settings
     options = webdriver.ChromeOptions()
     options.add_argument('--disable-blink-features=AutomationControlled')
@@ -98,10 +136,11 @@ def Get_Amazon_Info(asin_list, price_list):
 
     user_email_input.send_keys(user_email)
     user_pass_input.send_keys(user_pass)
+
     remember_me_button.click()
     singin_submit_button.click()
 
-    # Wait for OTP to be entered
+    # Wait for OTP to be entered if turned on
     while True:
         breaker = False
 
@@ -133,7 +172,7 @@ def Get_Amazon_Info(asin_list, price_list):
     # Redirect to original url to make sure we're on the right page
     driver.get(amazon_url)
 
-    for asin, woot_price in zip(asin_list, price_list):
+    for asin, woot_price, woot_name, woot_url in zip(asin_list, price_list, woot_name, woot_link):
         if asin != "null":
             while True:
                 try:
@@ -148,6 +187,7 @@ def Get_Amazon_Info(asin_list, price_list):
                     time.sleep(.25)
 
             asin_textbox.send_keys(asin)
+            time.sleep(.5)
             submit_asin_button.click()
 
             while True:
@@ -160,6 +200,7 @@ def Get_Amazon_Info(asin_list, price_list):
                 except NoSuchElementException:
                     time.sleep(.25)
 
+            time.sleep(.5)
             cog_textbox.send_keys(woot_price)
             # misc_cog_textbox.send_keys()
 
@@ -171,44 +212,91 @@ def Get_Amazon_Info(asin_list, price_list):
                 if any(x in td.text for x in matches):
                     if matches_found == 0:
                         sales_rank = td.text
-                        print('sales: ' + str(matches_found))
                     if matches_found == 1:
                         total_reviews = td.text
-                        print('total reviews: ' + str(matches_found))
 
                     matches_found += 1
-                    print('match found: ' + td.text)
 
                 if " offers" in td.text:
                     offers = td.text
 
-            print(sales_rank)
-            print(total_reviews)
-            time.sleep(1)
+            prep_cpu = False
+            prep_net_profit = False
+            prep_net_margin = False
 
-            html_source = driver.page_source
+            cpu = []
+            net_profit = []
+            net_margin = []
 
-            Func = open("GFG-1.html", "w")
+            for label in driver.find_elements_by_tag_name("kat-label"):
+                if prep_cpu:
+                    cpu.append(label.get_attribute("text"))
+                    prep_cpu = False
+                if prep_net_profit:
+                    net_profit.append(label.get_attribute("text"))
+                    prep_net_profit = False
+                if prep_net_margin:
+                    net_margin.append(label.get_attribute("text"))
+                    prep_net_margin = False
 
-            # Adding input data to the HTML file
-            Func.write(html_source)
+                if label.get_attribute("text") is not None:
+                    if "Estimated cost per unit" in label.get_attribute("text"):
+                        prep_cpu = True
+                    if "Net profit per unit" in label.get_attribute("text"):
+                        prep_net_profit = True
+                    if "Net margin" in label.get_attribute("text"):
+                        prep_net_margin = True
 
-            # Saving the data into the HTML file
-            Func.close()
+            #print(cpu[0], net_profit[0], net_margin[0])
 
-            time.sleep(2)
+            cpu = float(cpu[0].replace("$", "").replace(",", ""))
+            net_profit = float(net_profit[0].replace("$", ""))
+            net_margin = float(net_margin[0].replace("%", "").replace(",", ""))
 
-            for foobar in driver.find_elements_by_tag_name("kat-label"):
-                for barfoo in foobar.find_element_by_css_selector("[text='Estimated cost per unit']"):
-                    print(barfoo.text)
-                    print(barfoo)
-                    print('-------')
+            # Check if refurbished/multiple select option
+            refurb = False
+            if "refurbished" in woot_name.lower():
+                refurb = True
 
-            cpu = driver.find_element_by_class_name(cpu_xpath).text
-            net_unit_profit = driver.find_element_by_xpath(
-                net_unit_profit_xpath).text
-            amazon_fees = driver.find_element_by_xpath(amazon_fees_xpath).text
+            multi_select = False
+            if "choice" in woot_name.lower():
+                multi_select = True
+
+            # Push all data to dictionary
+            master_list_file[asin] = {
+                "Name": woot_name,
+                "ASIN": asin,
+                "Refurbished": refurb,
+                "Multi-Select": multi_select,
+                "Price": woot_price,
+                "Sales Rank": sales_rank,
+                "Total Reviews": total_reviews,
+                "Seller Offers": offers,
+                "Cost per Unit": cpu,
+                "Net Profit": net_profit,
+                "Margin Percent": net_margin,
+                "Woot Link": woot_url,
+            }
+
+            # Clear vars for next run
+            cpu = ""
+            net_profit = ""
+            net_margin = ""
+            sales_rank = ""
+            total_reviews = ""
+
+            driver.get(amazon_url)
+
+    # Write the dictionary to the CSV file
+    with open(export_csv_file, 'w') as f:
+        write_head_once = True
+        for asin, values in master_list_file.items():
+            w = csv.DictWriter(f, values.keys())
+            if write_head_once:
+                w.writeheader()
+            write_head_once = False
+            w.writerow(values)
 
 
 Pull_ASIN()
-Get_Amazon_Info(asin_csv, price_csv)
+Get_Amazon_Info(asin_csv, price_csv, woot_name, woot_link)
