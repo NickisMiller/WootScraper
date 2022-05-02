@@ -1,19 +1,23 @@
 import time
 import re
 import csv
+import os
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 
+script_dir = os.path.dirname(__file__)
+
 # Set 'False' for all pages, or set number of pages you want + 1
-top_woot_items = 2
+top_woot_items = 3
 
 woot_url = "https://www.woot.com/alldeals?ref=w_ngh_et_1"
 
 # Export file name
-file_name_save = "export_woot_bot_{}.csv".format(
+rel_path = "exports/export_woot_bot_{}.csv".format(
     int(round(datetime.now().timestamp())))
+file_name_save = os.path.join(script_dir, rel_path)
 
 driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.get(woot_url)
