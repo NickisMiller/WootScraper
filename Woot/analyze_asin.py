@@ -12,7 +12,10 @@ from datetime import datetime
 
 # Import Amazon credneitals into local dictionary
 config = configparser.RawConfigParser()
-config.read("/Users/codyheiser/Documents/AmazonSeller/Bots/creds.cfg")
+script_dir = os.path.dirname(__file__)
+rel_path = "../../creds.cfg"
+creds_file_path = os.path.join(script_dir, rel_path)
+config.read(creds_file_path)
 
 amazon_credentials = dict(config.items("Amazon_Credentials"))
 
@@ -20,9 +23,7 @@ user_email = amazon_credentials["amazon_user"]
 user_pass = amazon_credentials["amazon_pass"]
 
 # CSV asin file and website url
-#main_csv_file = r"./exports/export_woot_bot_1651438146.csv"
-
-script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+script_dir = os.path.dirname(__file__)
 rel_path = "exports/export_woot_bot_1651438146.csv"
 main_csv_file = os.path.join(script_dir, rel_path)
 
@@ -195,9 +196,13 @@ def Get_Amazon_Info(asin_list, price_list):
             # Saving the data into the HTML file
             Func.close()
 
-            for foobar in driver.find_elements_by_xpath("kat-label"):
-                print(foobar.text)
-                print('-------')
+            time.sleep(2)
+
+            for foobar in driver.find_elements_by_tag_name("kat-label"):
+                for barfoo in foobar.find_element_by_css_selector("[text='Estimated cost per unit']"):
+                    print(barfoo.text)
+                    print(barfoo)
+                    print('-------')
 
             cpu = driver.find_element_by_class_name(cpu_xpath).text
             net_unit_profit = driver.find_element_by_xpath(
