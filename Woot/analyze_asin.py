@@ -199,6 +199,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
             other_error = "An unexpected error has occurred. Please refresh or try again later."
             no_product_continue = True
 
+            check_loop_length = 0
             while True:
                 try:
                     cog_textbox = driver.find_element_by_css_selector(
@@ -208,9 +209,15 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
                     break
                 except NoSuchElementException:
                     time.sleep(.25)
+                    check_loop_length += .25
 
                     # Check for error messages on the amazon page - skip asin if error
                     if(no_products_found_message in driver.page_source or no_prod_dimentions in driver.page_source or other_error in driver.page_source):
+                        no_product_continue = False
+                        break
+
+                    # If loop has been running for more than 10 seconds, give up, accept fate
+                    if(check_loop_length > 10):
                         no_product_continue = False
                         break
 
