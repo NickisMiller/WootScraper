@@ -48,7 +48,6 @@ sorted_csv_file = sorted(date_keys, reverse=True)[0]
 # Combine latest file with rest of path
 rel_path = folder + "/" + appr_files[sorted_csv_file]
 main_csv_file = os.path.join(script_dir, rel_path)
-#main_csv_file = "/Users/nickm/OneDrive/Desktop/python/WootScraper/Woot/exports/export_woot_bot_1651625423.csv"
 
 # Export file
 rel_path = folder + "/final-export{}.csv".format(
@@ -176,6 +175,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
 
     total_runs = 0
     for asin, woot_price, woot_name, woot_url in zip(asin_list, price_list, woot_name, woot_link):
+        # If asin is not empty then continue
         if asin != "":
             while True:
                 try:
@@ -193,6 +193,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
             time.sleep(.5)
             submit_asin_button.click()
 
+            # Error messages that we have seen so far
             no_products_found_message = "No products matched your search. Please try another search."
             no_prod_dimentions = "Failed to get product dimensions. Define product dimensions to view an estimate."
             other_error = "An unexpected error has occurred. Please refresh or try again later."
@@ -207,6 +208,8 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
                     break
                 except NoSuchElementException:
                     time.sleep(.25)
+
+                    # Check for error messages on the amazon page - skip asin if error
                     if(no_products_found_message in driver.page_source or no_prod_dimentions in driver.page_source or other_error in driver.page_source):
                         no_product_continue = False
                         break
@@ -214,7 +217,6 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
             if(no_product_continue):
                 time.sleep(.5)
                 cog_textbox.send_keys(woot_price)
-                # misc_cog_textbox.send_keys()
 
                 # Collect the Amazon info
                 matches = ["#", ",", "(", ")"]
@@ -297,10 +299,12 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
                 sales_rank = ""
                 total_reviews = ""
 
+            # Reload asin lookup page
             driver.get(amazon_url)
 
         total_runs += 1
 
+        # Only put the header items in the file on the first run
         if(total_runs > 1):
             write_head_once = False
             open_type = "a"
@@ -315,6 +319,9 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
                 if write_head_once:
                     w.writeheader()
                 w.writerow(values)
+
+        # Clear dictionary after writing
+        master_list_file.clear()
 
 
 Pull_ASIN()
