@@ -192,6 +192,9 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
             time.sleep(.5)
             submit_asin_button.click()
 
+            no_products_found_message = "No products matched your search. Please try another search."
+            no_product_continue = True
+
             while True:
                 try:
                     cog_textbox = driver.find_element_by_css_selector(
@@ -201,92 +204,95 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
                     break
                 except NoSuchElementException:
                     time.sleep(.25)
+                    if(no_products_found_message in driver.page_source):
+                        no_product_continue = False
+                        break
 
-            time.sleep(.5)
-            cog_textbox.send_keys(woot_price)
-            # misc_cog_textbox.send_keys()
+            if(no_product_continue):
+                time.sleep(.5)
+                cog_textbox.send_keys(woot_price)
+                # misc_cog_textbox.send_keys()
 
-            # Collect the Amazon info
-            matches = ["#", ",", "(", ")"]
-            matches_found = 0
-            total_reviews = ""
+                # Collect the Amazon info
+                matches = ["#", ",", "(", ")"]
+                matches_found = 0
+                total_reviews = ""
 
-            for td in driver.find_elements_by_css_selector("td"):
-                if any(x in td.text for x in matches):
-                    if matches_found == 0:
-                        sales_rank = td.text
-                    if matches_found == 1:
-                        total_reviews = td.text
+                for td in driver.find_elements_by_css_selector("td"):
+                    if any(x in td.text for x in matches):
+                        if matches_found == 0:
+                            sales_rank = td.text
+                        if matches_found == 1:
+                            total_reviews = td.text
 
-                    matches_found += 1
+                        matches_found += 1
 
-                if " offers" in td.text:
-                    offers = td.text
+                    if " offers" in td.text:
+                        offers = td.text
 
-            prep_cpu = False
-            prep_net_profit = False
-            prep_net_margin = False
+                prep_cpu = False
+                prep_net_profit = False
+                prep_net_margin = False
 
-            cpu = []
-            net_profit = []
-            net_margin = []
+                cpu = []
+                net_profit = []
+                net_margin = []
 
-            for label in driver.find_elements_by_tag_name("kat-label"):
-                if prep_cpu:
-                    cpu.append(label.get_attribute("text"))
-                    prep_cpu = False
-                if prep_net_profit:
-                    net_profit.append(label.get_attribute("text"))
-                    prep_net_profit = False
-                if prep_net_margin:
-                    net_margin.append(label.get_attribute("text"))
-                    prep_net_margin = False
+                for label in driver.find_elements_by_tag_name("kat-label"):
+                    if prep_cpu:
+                        cpu.append(label.get_attribute("text"))
+                        prep_cpu = False
+                    if prep_net_profit:
+                        net_profit.append(label.get_attribute("text"))
+                        prep_net_profit = False
+                    if prep_net_margin:
+                        net_margin.append(label.get_attribute("text"))
+                        prep_net_margin = False
 
-                if label.get_attribute("text") is not None:
-                    if "Estimated cost per unit" in label.get_attribute("text"):
-                        prep_cpu = True
-                    if "Net profit per unit" in label.get_attribute("text"):
-                        prep_net_profit = True
-                    if "Net margin" in label.get_attribute("text"):
-                        prep_net_margin = True
+                    if label.get_attribute("text") is not None:
+                        if "Estimated cost per unit" in label.get_attribute("text"):
+                            prep_cpu = True
+                        if "Net profit per unit" in label.get_attribute("text"):
+                            prep_net_profit = True
+                        if "Net margin" in label.get_attribute("text"):
+                            prep_net_margin = True
 
-            #print(cpu[0], net_profit[0], net_margin[0])
+                cpu = float(cpu[0].replace("$", "").replace(",", ""))
+                net_profit = float(net_profit[0].replace("$", ""))
+                net_margin = float(net_margin[0].replace(
+                    "%", "").replace(",", ""))
 
-            cpu = float(cpu[0].replace("$", "").replace(",", ""))
-            net_profit = float(net_profit[0].replace("$", ""))
-            net_margin = float(net_margin[0].replace("%", "").replace(",", ""))
+                # Check if refurbished/multiple select option
+                refurb = False
+                if "refurbished" in woot_name.lower():
+                    refurb = True
 
-            # Check if refurbished/multiple select option
-            refurb = False
-            if "refurbished" in woot_name.lower():
-                refurb = True
+                multi_select = False
+                if "choice" in woot_name.lower():
+                    multi_select = True
 
-            multi_select = False
-            if "choice" in woot_name.lower():
-                multi_select = True
+                # Push all data to dictionary
+                master_list_file[asin] = {
+                    "Name": woot_name,
+                    "ASIN": asin,
+                    "Refurbished": refurb,
+                    "Multi-Select": multi_select,
+                    "Price": woot_price,
+                    "Sales Rank": sales_rank,
+                    "Total Reviews": total_reviews,
+                    "Seller Offers": offers,
+                    "Cost per Unit": cpu,
+                    "Net Profit": net_profit,
+                    "Margin Percent": net_margin,
+                    "Woot Link": woot_url,
+                }
 
-            # Push all data to dictionary
-            master_list_file[asin] = {
-                "Name": woot_name,
-                "ASIN": asin,
-                "Refurbished": refurb,
-                "Multi-Select": multi_select,
-                "Price": woot_price,
-                "Sales Rank": sales_rank,
-                "Total Reviews": total_reviews,
-                "Seller Offers": offers,
-                "Cost per Unit": cpu,
-                "Net Profit": net_profit,
-                "Margin Percent": net_margin,
-                "Woot Link": woot_url,
-            }
-
-            # Clear vars for next run
-            cpu = ""
-            net_profit = ""
-            net_margin = ""
-            sales_rank = ""
-            total_reviews = ""
+                # Clear vars for next run
+                cpu = ""
+                net_profit = ""
+                net_margin = ""
+                sales_rank = ""
+                total_reviews = ""
 
             driver.get(amazon_url)
 

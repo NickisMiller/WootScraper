@@ -37,7 +37,7 @@ woot_categories = [
 ]
 
 params = {
-    # "page": '1',
+    "page": '1',
 }
 
 get_request_ep = "https://developer.woot.com/feed/{}".format(
