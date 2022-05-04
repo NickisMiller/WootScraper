@@ -47,8 +47,8 @@ sorted_csv_file = sorted(date_keys, reverse=True)[0]
 
 # Combine latest file with rest of path
 rel_path = folder + "/" + appr_files[sorted_csv_file]
-#main_csv_file = os.path.join(script_dir, rel_path)
-main_csv_file = "/Users/nickm/OneDrive/Desktop/python/WootScraper/Woot/exports/export_woot_bot_1651625423.csv"
+main_csv_file = os.path.join(script_dir, rel_path)
+#main_csv_file = "/Users/nickm/OneDrive/Desktop/python/WootScraper/Woot/exports/export_woot_bot_1651625423.csv"
 
 # Export file
 rel_path = folder + "/final-export{}.csv".format(
@@ -102,7 +102,7 @@ def Pull_ASIN(csv_file=main_csv_file):
                 woot_name.append(row[2])
             if row[10] != "URL":
                 woot_link.append(row[10])
-            
+
 
 def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
     global master_list_file
@@ -209,6 +209,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
             # Collect the Amazon info
             matches = ["#", ",", "(", ")"]
             matches_found = 0
+            total_reviews = ""
 
             for td in driver.find_elements_by_css_selector("td"):
                 if any(x in td.text for x in matches):
