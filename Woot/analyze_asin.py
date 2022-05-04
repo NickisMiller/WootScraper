@@ -175,7 +175,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
     driver.get(amazon_url)
 
     for asin, woot_price, woot_name, woot_url in zip(asin_list, price_list, woot_name, woot_link):
-        if asin != "null":
+        if asin != "":
             while True:
                 try:
                     asin_textbox = driver.find_element_by_css_selector(
