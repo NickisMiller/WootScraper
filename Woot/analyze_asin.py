@@ -92,14 +92,14 @@ def Pull_ASIN(csv_file=main_csv_file):
         reader = csv.reader(file, delimiter=",")
         for row in reader:
             # Skips the title row and puts the rest into lists
-            if row[0] != "ASIN":
-                asin_csv.append(row[0])
-            if row[1] != "Price":
-                price_csv.append(row[1])
+            if row[1] != "ASIN":
+                asin_csv.append(row[1])
+            if row[3] != "Price":
+                price_csv.append(row[3])
             if row[2] != "Name":
                 woot_name.append(row[2])
-            if row[3] != "URL":
-                woot_link.append(row[3])
+            if row[10] != "URL":
+                woot_link.append(row[10])
 
 
 def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
