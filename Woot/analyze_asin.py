@@ -174,6 +174,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
     # Redirect to original url to make sure we're on the right page
     driver.get(amazon_url)
 
+    total_runs = 0
     for asin, woot_price, woot_name, woot_url in zip(asin_list, price_list, woot_name, woot_link):
         if asin != "":
             while True:
@@ -193,6 +194,8 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
             submit_asin_button.click()
 
             no_products_found_message = "No products matched your search. Please try another search."
+            no_prod_dimentions = "Failed to get product dimensions. Define product dimensions to view an estimate."
+            other_error = "An unexpected error has occurred. Please refresh or try again later."
             no_product_continue = True
 
             while True:
@@ -204,7 +207,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
                     break
                 except NoSuchElementException:
                     time.sleep(.25)
-                    if(no_products_found_message in driver.page_source):
+                    if(no_products_found_message in driver.page_source or no_prod_dimentions in driver.page_source or other_error in driver.page_source):
                         no_product_continue = False
                         break
 
@@ -296,15 +299,22 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
 
             driver.get(amazon_url)
 
-    # Write the dictionary to the CSV file
-    with open(export_csv_file, 'w') as f:
-        write_head_once = True
-        for asin, values in master_list_file.items():
-            w = csv.DictWriter(f, values.keys())
-            if write_head_once:
-                w.writeheader()
+        total_runs += 1
+
+        if(total_runs > 1):
             write_head_once = False
-            w.writerow(values)
+            open_type = "a"
+        else:
+            write_head_once = True
+            open_type = "w"
+
+        # Write the dictionary to the CSV file
+        with open(export_csv_file, open_type, encoding="utf-8") as f:
+            for asin, values in master_list_file.items():
+                w = csv.DictWriter(f, values.keys())
+                if write_head_once:
+                    w.writeheader()
+                w.writerow(values)
 
 
 Pull_ASIN()

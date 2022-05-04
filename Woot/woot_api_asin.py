@@ -37,7 +37,7 @@ woot_categories = [
 ]
 
 params = {
-    "page": '1',
+    # "page": '1',
 }
 
 get_request_ep = "https://developer.woot.com/feed/{}".format(
@@ -83,6 +83,12 @@ for i, offer_id_block in enumerate(preped_offer_ids):
         url=post_request_ep, json=offer_id_block, headers=api_key)
     block_return = post_offer_ids.json()
 
+    if("message" in block_return):
+        print("****")
+        print(block_return)
+        print("Block size (should be 25): " + str(len(offer_id_block)))
+        print("****")
+
     for item in block_return:
         offer_lookup[item["Id"]] = {
             "Id": item["Id"],
@@ -106,7 +112,7 @@ for i, offer_id_block in enumerate(preped_offer_ids):
         write_head_once = True
         open_type = "w"
 
-    with open(file_name_save, open_type) as f:
+    with open(file_name_save, open_type, encoding="utf-8") as f:
         for asin, values in offer_lookup.items():
             w = csv.DictWriter(f, values.keys())
             if write_head_once:
@@ -116,5 +122,6 @@ for i, offer_id_block in enumerate(preped_offer_ids):
 
     # Clear dictionary for next block
     offer_lookup.clear()
+    print(" ------- Block End ------ ")
 
 print("Complete.")
