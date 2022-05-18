@@ -3,6 +3,7 @@ import os
 import configparser
 import csv
 from datetime import datetime
+import time
 
 script_dir = os.path.dirname(__file__)
 
@@ -36,112 +37,125 @@ woot_categories = [
     "Wootoff",  # 10
 ]
 
-# If you want to only search a specific page: un-comment param
-params = {
-    # "page": '1',
-}
+for k, j in enumerate(range(200), 1):
+    # If you want to only search a specific page: un-comment param
+    params = {
+        "page": k
+    }
 
-# Woot get and post end points
-get_request_ep = "https://developer.woot.com/feed/{}".format(
-    woot_categories[category_select])
-post_request_ep = "https://developer.woot.com/getoffers"
+    # Woot get and post end points
+    get_request_ep = "https://developer.woot.com/feed/{}".format(
+        woot_categories[category_select])
+    post_request_ep = "https://developer.woot.com/getoffers"
 
-# Post requests allow 25 OfferIds per request
-preped_offer_ids = []
-temp_offer_ids = []
+    # Post requests allow 25 OfferIds per request
+    preped_offer_ids = []
+    temp_offer_ids = []
 
-# Get request for available offer ids
-get_offer_ids = requests.get(
-    url=get_request_ep, params=params, headers=api_key)
-offer_ids = get_offer_ids.json()
+    # Get request for available offer ids
+    get_offer_ids = requests.get(
+        url=get_request_ep, params=params, headers=api_key)
+    offer_ids = get_offer_ids.json()
 
-true_block_count = 0
-for i, item in enumerate(offer_ids["Items"]):
+    true_block_count = 0
+    for i, item in enumerate(offer_ids["Items"]):
 
-    # If no condition given or 'new' is in the condition field - continue
-    if((item["Condition"] is None) or ("new" in item["Condition"].lower())):
+        # If no condition given or 'new' is in the condition field - continue
+        if((item["Condition"] is None) or ("new" in item["Condition"].lower())):
 
-        # Check if divisable by 24 and not equal to 1 or 0
-        if(true_block_count % 24 == 0 and true_block_count != 1 and true_block_count != 0):
-            # Append item to temp list
-            temp_offer_ids.append(item["OfferId"])
+            # Check if divisable by 24 and not equal to 1 or 0
+            if(true_block_count % 15 == 0 and true_block_count != 1 and true_block_count != 0):
+                # Append item to temp list
+                temp_offer_ids.append(item["OfferId"])
 
-            # Divisable by 25 - append temp list to main list
-            preped_offer_ids.append(temp_offer_ids)
-            temp_offer_ids = []
+                # Divisable by 25 - append temp list to main list
+                preped_offer_ids.append(temp_offer_ids)
+                temp_offer_ids = []
+            else:
+                # Append item to temp list
+                temp_offer_ids.append(item["OfferId"])
+
+            # Get true block count after 'new' or 'none' if statement filter
+            true_block_count += 1
         else:
-            # Append item to temp list
-            temp_offer_ids.append(item["OfferId"])
 
-        # Get true block count after 'new' or 'none' if statement filter
-        true_block_count += 1
-    else:
+            # Print what item condition is being skipped
+            print("Skipping " + item["Condition"] + " item.")
 
-        # Print what item condition is being skipped
-        print("Skipping " + item["Condition"] + " item.")
+        # Write remaining items to list
+        if(i == len(offer_ids["Items"])):
+            preped_offer_ids.append(temp_offer_ids)
 
-    # Write remaining items to list
-    if(i == len(offer_ids["Items"])):
-        preped_offer_ids.append(temp_offer_ids)
+    print("Total Items Pulled: " + str(len(offer_ids["Items"])))
 
+    offer_lookup = {}
+    print(preped_offer_ids)
+    # Send OfferIds back to woot to get asin and pricing information
+    for i, offer_id_block in enumerate(preped_offer_ids):
 
-print("Total Items Pulled: " + str(len(offer_ids["Items"])))
+        while True:
+            # Send post request to woot api
+            post_offer_ids = requests.post(
+                url=post_request_ep, json=offer_id_block, headers=api_key)
+            block_return = post_offer_ids.json()
+            print('running')
 
-offer_lookup = {}
+            if("message" in block_return):
+                if block_return["message"] != "Internal server error" and block_return["message"] != "Endpoint request timed out":
+                    break
+                else:
+                    time.sleep(2)
+                    print("\n\nNew Error:\n")
+                    print(offer_id_block)
+            else:
+                break
 
-# Send OfferIds back to woot to get asin and pricing information
-for i, offer_id_block in enumerate(preped_offer_ids):
+        # If error in json return - display error to user
+        if("message" in block_return):
+            print("****")
+            print(block_return)
+            print("Block size (should be 25): " + str(len(offer_id_block)))
+            print("****")
 
-    # Send post request to woot api
-    post_offer_ids = requests.post(
-        url=post_request_ep, json=offer_id_block, headers=api_key)
-    block_return = post_offer_ids.json()
+        # Send json return data to dictionary for output to csv file
+        for item in block_return:
+            print(item)
+            offer_lookup[item["Id"]] = {
+                "Id": item["Id"],
+                "Asin": item["Items"][0]["Asin"],
+                "FullTitle": item["FullTitle"],
+                "Price": item["Items"][0]["SalePrice"],
+                "IsOfferLiveNow": item["IsOfferLiveNow"],
+                "IsSoldOut": item["IsSoldOut"],
+                "IsWootOff": item["IsWootOff"],
+                "Items": item["Items"],
+                "RemainingPercent": item["PercentageRemainingBlurred"],
+                "PurchaseLimit": item["PurchaseLimit"],
+                "Url": item["Url"],
+            }
 
-    # If error in json return - display error to user
-    if("message" in block_return):
-        print("****")
-        print(block_return)
-        print("Block size (should be 25): " + str(len(offer_id_block)))
-        print("****")
+        print("Block completed. ({})/{}".format(i+1, len(preped_offer_ids)))
 
-    # Send json return data to dictionary for output to csv file
-    for item in block_return:
-        offer_lookup[item["Id"]] = {
-            "Id": item["Id"],
-            "Asin": item["Items"][0]["Asin"],
-            "FullTitle": item["FullTitle"],
-            "Price": item["Items"][0]["SalePrice"],
-            "IsOfferLiveNow": item["IsOfferLiveNow"],
-            "IsSoldOut": item["IsSoldOut"],
-            "IsWootOff": item["IsWootOff"],
-            "Items": item["Items"],
-            "RemainingPercent": item["PercentageRemainingBlurred"],
-            "PurchaseLimit": item["PurchaseLimit"],
-            "Url": item["Url"],
-        }
-
-    print("Block completed.")
-
-    # If this is the first loop, write the header row and change to writing mode
-    if(i > 0):
-        write_head_once = False
-        open_type = "a"  # append mode
-    else:
-        write_head_once = True
-        open_type = "w"  # write mode
-
-    # Push the dictionary data to the csv file - every 25 items (block)
-    with open(file_name_save, open_type, encoding="utf-8") as f:
-        for asin, values in offer_lookup.items():
-            w = csv.DictWriter(f, values.keys())
-            if write_head_once:
-                w.writeheader()
+        # If this is the first loop, write the header row and change to writing mode
+        if(i > 0 and j == 0):
             write_head_once = False
-            w.writerow(values)
+            open_type = "a"  # append mode
+        else:
+            write_head_once = True
+            open_type = "w"  # write mode
 
-    # Clear dictionary for next block
-    offer_lookup.clear()
+        # Push the dictionary data to the csv file - every 25 items (block)
+        with open(file_name_save, open_type, encoding="utf-8") as f:
+            for asin, values in offer_lookup.items():
+                w = csv.DictWriter(f, values.keys())
+                if write_head_once:
+                    w.writeheader()
+                write_head_once = False
+                w.writerow(values)
 
-    print(" ------- Block End ------ ")
+        # Clear dictionary for next block
+        offer_lookup.clear()
 
-print("Complete.")
+        print(" ------- Block End ------ ")
+
+    print("Complete.")

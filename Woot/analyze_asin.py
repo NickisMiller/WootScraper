@@ -271,7 +271,7 @@ def Get_Amazon_Info(asin_list, price_list, woot_name, woot_link):
 
                 cpu = float(cpu[0].replace("$", "").replace(",", ""))
                 net_profit = float(net_profit[0].replace(
-                    "$", "").replace("> ", ""))
+                    "$", "").replace("> ", "").replace(",", ""))
                 net_margin = float(net_margin[0].replace(
                     "%", "").replace(",", ""))
 
